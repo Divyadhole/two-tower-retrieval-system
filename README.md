@@ -4,6 +4,8 @@
 
 A portfolio-grade e-commerce retrieval system that uses a two-tower architecture to match user search queries with product embeddings. The project demonstrates scalable candidate generation, personalization signals, product metadata features, and ranking metrics for shopping search.
 
+**Live website:** https://divyadhole.github.io/two-tower-retrieval-system/
+
 The source inspiration is Amazon's public Shopping Queries / ESCI benchmark, which contains difficult shopping queries and query-product relevance judgments. This repo ships with a compact demo catalog so the system runs locally, while the data pipeline and model interfaces are shaped for full ESCI-style training.
 
 ## Why This Project Matters
