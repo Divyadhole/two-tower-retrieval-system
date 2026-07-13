@@ -83,7 +83,3 @@ For a full-scale version, map Amazon Shopping Queries / ESCI fields into:
 - historical interaction signals when available
 
 The included demo data is intentionally small so the app can run instantly in a portfolio review.
-
-## Hiring Manager Signal
-
-This project shows practical retrieval engineering judgment: separate query and item towers, precomputable item embeddings, ANN-ready candidate generation, ranking metrics, and personalization hooks. It is built to explain how scalable search works, not just to display a model file.
