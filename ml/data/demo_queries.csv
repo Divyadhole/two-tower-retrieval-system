@@ -1,0 +1,7 @@
+query,product_id,relevance,segment
+wireless headphones,B001,3,electronics_enthusiast
+wireless headphones,B002,2,budget_shopper
+desk lamp usb,B007,3,home_office
+running shoes,B006,3,fitness
+office chair lumbar,B005,3,home_office
+mechanical keyboard,B008,3,electronics_enthusiast

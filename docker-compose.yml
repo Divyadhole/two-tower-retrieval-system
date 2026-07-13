@@ -1,0 +1,16 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8320:8320"
+
+  frontend:
+    build: ./frontend
+    environment:
+      - VITE_API_URL=http://127.0.0.1:8320
+    ports:
+      - "5190:5190"
+    depends_on:
+      - backend

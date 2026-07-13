@@ -1,0 +1,31 @@
+<svg width="1280" height="560" viewBox="0 0 1280 560" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Two-tower retrieval architecture</title>
+  <desc id="desc">Architecture diagram for query tower, item tower, vector index, retrieval, personalization, and evaluation.</desc>
+  <rect width="1280" height="560" fill="#FFFFFF"/>
+  <text x="64" y="82" fill="#101820" font-family="Inter, Arial, sans-serif" font-size="40" font-weight="800">Two-Tower Retrieval Architecture</text>
+  <text x="64" y="118" fill="#657184" font-family="Inter, Arial, sans-serif" font-size="18">Fast candidate generation for e-commerce search and recommendations.</text>
+  <g font-family="Inter, Arial, sans-serif">
+    <rect x="86" y="186" width="220" height="108" rx="10" fill="#F8FAFC" stroke="#D9E1EA"/>
+    <text x="120" y="230" fill="#101820" font-size="22" font-weight="800">Query Tower</text>
+    <text x="120" y="260" fill="#657184" font-size="15">Text + user context</text>
+    <rect x="86" y="350" width="220" height="108" rx="10" fill="#F8FAFC" stroke="#D9E1EA"/>
+    <text x="120" y="394" fill="#101820" font-size="22" font-weight="800">Item Tower</text>
+    <text x="120" y="424" fill="#657184" font-size="15">Title + metadata</text>
+    <rect x="398" y="268" width="220" height="108" rx="10" fill="#EEF5FF" stroke="#B8D2F2"/>
+    <text x="432" y="312" fill="#0F5FCC" font-size="22" font-weight="800">Shared Space</text>
+    <text x="432" y="342" fill="#657184" font-size="15">Normalized embeddings</text>
+    <rect x="710" y="268" width="220" height="108" rx="10" fill="#F0FBF7" stroke="#B7E7D7"/>
+    <text x="744" y="312" fill="#0B8F67" font-size="22" font-weight="800">Vector Index</text>
+    <text x="744" y="342" fill="#657184" font-size="15">ANN candidate search</text>
+    <rect x="1022" y="268" width="220" height="108" rx="10" fill="#F8FAFC" stroke="#D9E1EA"/>
+    <text x="1056" y="312" fill="#101820" font-size="22" font-weight="800">Top-K Results</text>
+    <text x="1056" y="342" fill="#657184" font-size="15">Ranked products</text>
+    <path d="M306 240H398" stroke="#0F5FCC" stroke-width="4"/>
+    <path d="M306 404C350 404 350 322 398 322" stroke="#0CB17E" stroke-width="4"/>
+    <path d="M618 322H710" stroke="#0F5FCC" stroke-width="4"/>
+    <path d="M930 322H1022" stroke="#0F5FCC" stroke-width="4"/>
+    <rect x="390" y="430" width="500" height="66" rx="10" fill="#101820"/>
+    <text x="420" y="471" fill="#FFFFFF" font-size="18" font-weight="800">Offline eval:</text>
+    <text x="532" y="471" fill="#D7E0EA" font-size="17">Recall@K · NDCG@K · segment lift · cold-start coverage</text>
+  </g>
+</svg>
