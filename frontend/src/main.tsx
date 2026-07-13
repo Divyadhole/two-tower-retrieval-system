@@ -25,49 +25,122 @@ type Result = {
   };
 };
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8320";
 const sampleQueries = ["wireless headphones", "desk lamp usb", "comfortable chair for desk", "mechanical keyboard"];
-const demoResults: Result[] = [
+const catalog: Product[] = [
   {
-    product: {
-      product_id: "B001",
-      title: "Wireless Noise Cancelling Headphones",
-      category: "Electronics",
-      price: 129.99,
-      rating: 4.6,
-      review_count: 18420,
-      popularity: 0.92
-    },
-    score: 0.337,
-    signals: { semantic: 0.0981, metadata: 0.239, category: "Electronics", rating: 4.6, popularity: 0.92 }
+    product_id: "B001",
+    title: "Wireless Noise Cancelling Headphones",
+    category: "Electronics",
+    price: 129.99,
+    rating: 4.6,
+    review_count: 18420,
+    popularity: 0.92
   },
   {
-    product: {
-      product_id: "B002",
-      title: "Bluetooth Earbuds with Charging Case",
-      category: "Electronics",
-      price: 39.99,
-      rating: 4.4,
-      review_count: 9320,
-      popularity: 0.83
-    },
-    score: 0.291,
-    signals: { semantic: 0.074, metadata: 0.217, category: "Electronics", rating: 4.4, popularity: 0.83 }
+    product_id: "B002",
+    title: "Bluetooth Earbuds with Charging Case",
+    category: "Electronics",
+    price: 39.99,
+    rating: 4.4,
+    review_count: 9320,
+    popularity: 0.83
   },
+  { product_id: "B003", title: "Stainless Steel Water Bottle 32 oz", category: "Home", price: 21.99, rating: 4.8, review_count: 22310, popularity: 0.89 },
+  { product_id: "B004", title: "Organic Cotton Yoga Pants", category: "Fashion", price: 48, rating: 4.5, review_count: 7100, popularity: 0.74 },
+  { product_id: "B005", title: "Ergonomic Office Chair with Lumbar Support", category: "Furniture", price: 219, rating: 4.3, review_count: 5120, popularity: 0.77 },
+  { product_id: "B006", title: "Running Shoes for Road Training", category: "Sports", price: 86.5, rating: 4.5, review_count: 12100, popularity: 0.81 },
+  { product_id: "B007", title: "Smart LED Desk Lamp with USB Port", category: "Home", price: 34.99, rating: 4.2, review_count: 3820, popularity: 0.64 },
   {
-    product: {
-      product_id: "B008",
-      title: "Mechanical Keyboard RGB Blue Switches",
-      category: "Electronics",
-      price: 74.5,
-      rating: 4.7,
-      review_count: 15800,
-      popularity: 0.88
-    },
-    score: 0.248,
-    signals: { semantic: 0, metadata: 0.248, category: "Electronics", rating: 4.7, popularity: 0.88 }
+    product_id: "B008",
+    title: "Mechanical Keyboard RGB Blue Switches",
+    category: "Electronics",
+    price: 74.5,
+    rating: 4.7,
+    review_count: 15800,
+    popularity: 0.88
   }
 ];
+
+function tokenize(text: string) {
+  return text.toLowerCase().match(/[a-z0-9]+/g)?.filter((token) => token.length > 1) ?? [];
+}
+
+function priceBucket(price: number) {
+  if (price < 25) return "budget";
+  if (price < 100) return "mid";
+  return "premium";
+}
+
+function featureVector(features: string[], dimensions = 96) {
+  const vector = Array.from({ length: dimensions }, () => 0);
+  for (const feature of features) {
+    let hash = 2166136261;
+    for (let index = 0; index < feature.length; index += 1) {
+      hash ^= feature.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    const slot = Math.abs(hash) % dimensions;
+    const sign = (hash >>> 8) % 2 === 0 ? 1 : -1;
+    vector[slot] += sign;
+  }
+  const norm = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
+  return norm === 0 ? vector : vector.map((value) => value / norm);
+}
+
+function encodeQuery(searchQuery: string, segment: string, preferredCategory: string, priceSensitivity: number) {
+  const tokens = tokenize(searchQuery);
+  const features = tokens.map((token) => `term:${token}`);
+  features.push(...tokens.map((token) => `q:${token}`));
+  features.push(...tokens.map((token) => `seg:${segment}:${token}`));
+  if (preferredCategory) features.push(`pref:${preferredCategory.toLowerCase()}`);
+  features.push(`price_sensitivity:${priceSensitivity.toFixed(1)}`);
+  return featureVector(features);
+}
+
+function encodeProduct(product: Product) {
+  const tokens = tokenize(product.title);
+  const features = tokens.map((token) => `term:${token}`);
+  features.push(...tokens.map((token) => `title:${token}`));
+  features.push(`category:${product.category.toLowerCase()}`);
+  features.push(`price_bucket:${priceBucket(product.price)}`);
+  features.push(`rating_bucket:${Math.floor(product.rating)}`);
+  features.push(`reviews_bucket:${Math.min(Math.floor(product.review_count / 500), 10)}`);
+  features.push(`popularity:${product.popularity.toFixed(1)}`);
+  return featureVector(features);
+}
+
+function dot(left: number[], right: number[]) {
+  return left.reduce((sum, value, index) => sum + value * right[index], 0);
+}
+
+function metadataBoost(product: Product, preferredCategory: string, priceSensitivity: number) {
+  const quality = (product.rating - 4) * 0.05 + product.popularity * 0.08;
+  const categoryMatch = product.category === preferredCategory ? 0.12 : 0;
+  const priceAlignment = (1 - Math.min(product.price / 250, 1)) * priceSensitivity * 0.08;
+  return quality + categoryMatch + priceAlignment;
+}
+
+function retrieveProducts(searchQuery: string, segment: string, preferredCategory: string, priceSensitivity: number) {
+  const queryEmbedding = encodeQuery(searchQuery, segment, preferredCategory, priceSensitivity);
+  return catalog
+    .map((product) => {
+      const semantic = dot(queryEmbedding, encodeProduct(product));
+      const metadata = metadataBoost(product, preferredCategory, priceSensitivity);
+      return {
+        product,
+        score: Number((semantic + metadata).toFixed(4)),
+        signals: {
+          semantic: Number(semantic.toFixed(4)),
+          metadata: Number(metadata.toFixed(4)),
+          category: product.category,
+          rating: product.rating,
+          popularity: product.popularity
+        }
+      };
+    })
+    .sort((left, right) => right.score - left.score)
+    .slice(0, 5);
+}
 
 function App() {
   const [query, setQuery] = useState(sampleQueries[0]);
@@ -79,37 +152,22 @@ function App() {
 
   const topResult = useMemo(() => results[0], [results]);
 
-  async function runSearch(nextQuery = query) {
+  function runSearch(nextQuery = query) {
     setQuery(nextQuery);
     setLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/search`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: nextQuery,
-          segment,
-          preferred_categories: category ? [category] : [],
-          price_sensitivity: priceSensitivity,
-          top_k: 5
-        })
-      });
-      if (!response.ok) {
-        setResults(demoResults);
-        return;
-      }
-      const payload = await response.json();
-      setResults(payload.results?.length ? payload.results : demoResults);
-    } catch {
-      setResults(demoResults);
-    } finally {
+    window.setTimeout(() => {
+      setResults(retrieveProducts(nextQuery, segment, category, priceSensitivity));
       setLoading(false);
-    }
+    }, 120);
   }
 
   useEffect(() => {
     runSearch(sampleQueries[0]);
   }, []);
+
+  useEffect(() => {
+    setResults(retrieveProducts(query, segment, category, priceSensitivity));
+  }, [segment, category, priceSensitivity]);
 
   return (
     <main className="app-shell">
